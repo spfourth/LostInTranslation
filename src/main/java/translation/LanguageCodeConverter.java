@@ -45,7 +45,7 @@ public class LanguageCodeConverter {
                 String[] split_text = line.split("\t");
 
                 String language = split_text[0];
-                String code = split_text[1];
+                String code = split_text[1].toLowerCase();
 
                 languageCodeToLanguage.put(code, language);
                 languageToLanguageCode.put(language, code);
