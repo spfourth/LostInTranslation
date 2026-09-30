@@ -3,31 +3,41 @@ package translation;
 import javax.swing.*;
 import java.awt.event.*;
 
-
-// TODO Task D: Update the GUI for the program to align with UI shown in the README example.
-//            Currently, the program only uses the CanadaTranslator and the user has
-//            to manually enter the language code they want to use for the translation.
-//            See the examples package for some code snippets that may be useful when updating
-//            the GUI.
 public class GUI {
 
+    public static void updateTranslations(LanguageCodeConverter lc, CountryCodeConverter cc, Translator t, JLabel jl, JComboBox lcb, JComboBox ccb){
+        String language = lc.fromLanguage(lcb.getSelectedItem().toString());
+        String country = cc.fromCountry(ccb.getSelectedItem().toString());
+
+        String result = t.translate(country, language);
+        if (result == null) {
+            result = "no translation found!";
+        }
+        jl.setText(result);
+    }
+
     public static void main(String[] args) {
+        Translator translator = new JSONTranslator();
+        CountryCodeConverter CCodeConverter = new CountryCodeConverter();
+        LanguageCodeConverter LCodeConverter = new LanguageCodeConverter();
         SwingUtilities.invokeLater(() -> {
             JPanel countryPanel = new JPanel();
-            JTextField countryField = new JTextField(10);
-            countryField.setText("can");
-            countryField.setEditable(false); // we only support the "can" country code for now
+            JComboBox<String> countryComboBox = new JComboBox<>();
+            for(String countryCode : translator.getCountryCodes()) {
+                countryComboBox.addItem(CCodeConverter.fromCountryCode(countryCode));
+            }
             countryPanel.add(new JLabel("Country:"));
-            countryPanel.add(countryField);
+            countryPanel.add(countryComboBox);
 
             JPanel languagePanel = new JPanel();
-            JTextField languageField = new JTextField(10);
+            JComboBox<String> languageComboBox = new JComboBox<>();
+            for(String languageCode : translator.getLanguageCodes()) {
+                languageComboBox.addItem(LCodeConverter.fromLanguageCode(languageCode));
+            }
             languagePanel.add(new JLabel("Language:"));
-            languagePanel.add(languageField);
+            languagePanel.add(languageComboBox);
 
             JPanel buttonPanel = new JPanel();
-            JButton submit = new JButton("Submit");
-            buttonPanel.add(submit);
 
             JLabel resultLabelText = new JLabel("Translation:");
             buttonPanel.add(resultLabelText);
@@ -36,25 +46,18 @@ public class GUI {
 
 
             // adding listener for when the user clicks the submit button
-            submit.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    String language = languageField.getText();
-                    String country = countryField.getText();
-
-                    // for now, just using our simple translator, but
-                    // we'll need to use the real JSON version later.
-                    Translator translator = new CanadaTranslator();
-
-                    String result = translator.translate(country, language);
-                    if (result == null) {
-                        result = "no translation found!";
-                    }
-                    resultLabel.setText(result);
-
-                }
-
-            });
+            languageComboBox.addActionListener(e -> updateTranslations(LCodeConverter,
+                               CCodeConverter,
+                               translator,
+                               resultLabel,
+                               languageComboBox,
+                               countryComboBox));
+            countryComboBox.addActionListener(e -> updateTranslations(LCodeConverter,
+                               CCodeConverter,
+                               translator,
+                               resultLabel,
+                               languageComboBox,
+                               countryComboBox));
 
             JPanel mainPanel = new JPanel();
             mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
@@ -68,7 +71,14 @@ public class GUI {
             frame.pack();
             frame.setVisible(true);
 
-
+            updateTranslations(LCodeConverter,
+                               CCodeConverter,
+                               translator,
+                               resultLabel,
+                               languageComboBox,
+                               countryComboBox);
         });
+
     }
+
 }
